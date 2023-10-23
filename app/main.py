@@ -22,8 +22,8 @@ from gensim.models.doc2vec import Doc2Vec,TaggedDocument
 
 
 # main.py
-
-from .rs_models import d2v  # d2v 모듈을 불러옴
+# https://github.com/lsjsj92/fast-api-tutorial/blob/main/main.py
+from .packages.routers import d2v  # d2v 모듈을 불러옴
 
 app = FastAPI()
 
@@ -48,6 +48,3 @@ async def contents_based_rs(data: Model):
     global DB
     DB = recommended_list
     return recommended_list
-
-
-
