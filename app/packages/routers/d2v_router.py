@@ -1,4 +1,27 @@
-# d2v.py
+
+# d2v_router.py 
+# 1. models 디렉토리에서 모델 가져오고
+# 2. 라우터 설정
+#   * post, predict(결과값 산출)
+# 3. main.py 에는 d2v_router의 경로를 추가해주기
+
+from fastapi import APIRouter
+from pydantic import BaseModel
+
+#TODO 모델 가져오기 코드
+
+d2v = APIRouter(prefix='/d2v')
+
+# router 경로 설정
+@d2v.get('/',tags=['d2v_model'])
+async def start_d2v():
+    return {"msg":'d2v위치'}
+
+
+class Model(BaseModel):
+    genre1: str
+    genre2: str
+    genre3: str
 
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 
@@ -19,3 +42,18 @@ def get_similar_movies(genre1, genre2, genre3):
     similar_documents = model.dv.most_similar([inferred_vector])
     recommended_list = [elm[0] for elm in similar_documents]
     return recommended_list
+
+
+
+
+@d2v.post('/predict',tags=['d2v_model'])
+async def contents_based_rs(data: Model):
+    recommended_list = get_similar_movies(data.genre1, data.genre2, data.genre3)
+    global DB
+    DB = recommended_list
+    return recommended_list
+
+
+
+
+
