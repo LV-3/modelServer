@@ -26,6 +26,8 @@ from gensim.models.doc2vec import Doc2Vec,TaggedDocument
 
 from app.packages.routers import d2v_router  # d2v 모듈을 불러옴
 from app.packages.routers import Sbert_router
+from app.packages.routers import DeepFM_router
+
 import importlib
 
 app = FastAPI()
@@ -34,7 +36,7 @@ app = FastAPI()
 # d2v_router.py에서 d2v라우터 가져오기
 app.include_router(d2v_router.d2v)
 app.include_router(Sbert_router.s_bert)
-
+app.include_router(DeepFM_router.deepfm)
 
 DB = []
 
