@@ -47,7 +47,7 @@ def get_similar_movies(genre1, genre2, genre3):
 
 
 @d2v.post('/predict',tags=['d2v_model'])
-async def contents_based_rs(data: Model):
+async def contents_based_rs(data: Model) -> list: # 변경 예정
     recommended_list = get_similar_movies(data.genre1, data.genre2, data.genre3)
     global DB
     DB = recommended_list

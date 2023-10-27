@@ -1,3 +1,5 @@
+import os
+
 from fastapi import APIRouter
 from pydantic import BaseModel
 
@@ -6,11 +8,13 @@ import pandas as pd
 import faiss
 from sentence_transformers import SentenceTransformer
 
-
+import os
+print(os.getcwd())
 ########################################################
+import os
 
+movie = pd.read_pickle('resource/movie.pickle')
 
-movie = pd.read_pickle(r'C:\Users\USER\Desktop\-VOD_proj-cloud\movie.pickle')
 description_list = movie['description'].to_list()
 
 
@@ -34,7 +38,7 @@ index = faiss.IndexIDMap(faiss.IndexFlatIP(768))
 index.add_with_ids(encoded_data,np.array(range(0,len(description_list))))
 
 
-def search(query) -> dict:
+def search(query:str) -> dict:
    query_vector = model.encode([query])
    k = 5
    D,I = index.search(query_vector, k)
@@ -63,7 +67,7 @@ class Model(BaseModel):
 
 
 @s_bert.post('/predict',tags=['S_bert'])
-async def simular_description(query:Model):
+async def simular_description(query:Model) -> dict:
     print(query.description)
 
     prediction = search(query.description)
