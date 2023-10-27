@@ -32,8 +32,8 @@ import importlib
 
 app = FastAPI()
 
-
-# d2v_router.py에서 d2v라우터 가져오기
+#
+# # d2v_router.py에서 d2v라우터 가져오기
 app.include_router(d2v_router.d2v)
 app.include_router(Sbert_router.s_bert)
 app.include_router(DeepFM_router.deepfm)
