@@ -38,7 +38,7 @@ index = faiss.IndexIDMap(faiss.IndexFlatIP(768))
 index.add_with_ids(encoded_data,np.array(range(0,len(description_list))))
 
 
-def search(query:str) -> dict:xxlimited
+def search(query:str) -> dict:
    query_vector = model.encode([query])
    k = 5
    D,I = index.search(query_vector, k)

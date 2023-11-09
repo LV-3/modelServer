@@ -34,24 +34,23 @@ documents = [
 
 # Doc2Vec 모델 학습
 model = Doc2Vec(vector_size=20, window=2, min_count=1, workers=4, epochs=100)
+print('Traning.........')
 model.build_vocab(documents)
 model.train(documents, total_examples=model.corpus_count, epochs=model.epochs)
+print('Trained')
 
-def get_similar_movies(genre1, genre2, genre3):
+async def get_similar_movies(genre1, genre2, genre3):
     inferred_vector = model.infer_vector([genre1, genre2, genre3])
     similar_documents = model.dv.most_similar([inferred_vector])
     recommended_list = [elm[0] for elm in similar_documents]
     return recommended_list
 
-
-
-
-@d2v.post('/predict',tags=['d2v_model'])
-async def contents_based_rs(data: Model) -> list: # 변경 예정
-    recommended_list = get_similar_movies(data.genre1, data.genre2, data.genre3)
-    global DB
-    DB = recommended_list
-    return recommended_list
+# @d2v.post('/predict',tags=['d2v_model'])
+# async def contents_based_rs(data: Model) -> list: # 변경 예정
+#     recommended_list = get_similar_movies(data.genre1, data.genre2, data.genre3)
+#     global DB
+#     DB = recommended_list
+#     return recommended_list
 
 
 
