@@ -2,7 +2,7 @@ import yaml
 import json
 from confluent_kafka import Consumer, KafkaError
 from packages.routers.d2v_router import get_similar_movies
-from producer.kafka_producer import init_producer
+from producer.kafka_producer import init_producer, send_message_confluent
 
 
 consumer = None
@@ -59,7 +59,7 @@ async def cons_messages():
             
             print(f"Sending message to topic {topic}: {recommended_list}")
             
-            # await send_message_confluent(producer, topic, json.dumps(recommended_list))
+            send_message_confluent(producer, 'producing_test', json.dumps(recommended_list))
 
     except KeyboardInterrupt:
         pass

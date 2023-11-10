@@ -1,4 +1,6 @@
 bootstrap.servers: "localhost:9092"
+
+# 리더에 메세지가 전송되고 replica가 다 적용된 후에 돌려 받는 형식의 옵션
 acks: "all"
 retries: 3
 compression.type: "snappy"
