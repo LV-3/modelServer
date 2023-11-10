@@ -1,0 +1,13 @@
+bootstrap.servers: "localhost:9092"
+acks: "all"
+retries: 3
+compression.type: "snappy"
+linger.ms: 1
+batch.num.messages: 1000
+queue.buffering.max.messages: 10000
+queue.buffering.max.ms: 10
+message.send.max.retries: 2
+retry.backoff.ms: 100
+message.timeout.ms: 10000
+request.timeout.ms: 20000
+delivery.report.only.error: true
