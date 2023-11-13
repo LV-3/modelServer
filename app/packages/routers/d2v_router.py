@@ -22,6 +22,7 @@ class Model(BaseModel):
     genre1: str
     genre2: str
     genre3: str
+{"genre1":"comedy", "genre2":"crime", "genre3":"crime"}
 
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 
@@ -34,12 +35,11 @@ documents = [
 
 # Doc2Vec 모델 학습
 model = Doc2Vec(vector_size=20, window=2, min_count=1, workers=4, epochs=100)
-print('Traning.........')
+
 model.build_vocab(documents)
 model.train(documents, total_examples=model.corpus_count, epochs=model.epochs)
-print('Trained')
 
-async def get_similar_movies(genre1, genre2, genre3):
+async def get_similar_movies(genre1: str, genre2: str, genre3:str) -> list:
     inferred_vector = model.infer_vector([genre1, genre2, genre3])
     similar_documents = model.dv.most_similar([inferred_vector])
     recommended_list = [elm[0] for elm in similar_documents]
@@ -51,8 +51,3 @@ async def get_similar_movies(genre1, genre2, genre3):
 #     global DB
 #     DB = recommended_list
 #     return recommended_list
-
-
-
-
-
