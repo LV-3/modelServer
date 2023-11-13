@@ -61,8 +61,8 @@ async def cons_messages():
             
             send_message_confluent(producer, 'producing_test', json.dumps(recommended_list))
 
-    except KeyboardInterrupt:
-        pass
+    except Exception as e:
+        print(str(e))
     finally:
         consumer.close()
 
