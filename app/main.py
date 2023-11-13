@@ -2,13 +2,9 @@ from typing import Union
 from fastapi import FastAPI
 from pydantic import BaseModel
 from gensim.models.doc2vec import Doc2Vec,TaggedDocument
-from app.producer.kafka_producer import send_message_confluent, init_producer
-from app.consumer.kafka_consumer import cons_messages
+# from app.producer.kafka_producer import send_message_confluent, init_producer
+from app.consumer.kafka_consumer import KafkaProcessor
 import asyncio
-from kafka import KafkaProducer
-import json
-
-# producer = KafkaProducer(bootstrap_servers='localhost:9092', value_serializer=lambda v: json.dumps(v).encode('utf-8'))
 
 # TODO conda activate lv3_fastapi
 
@@ -47,7 +43,7 @@ class Model(BaseModel):
 
 @app.get('/')
 def read_root():
-    return {'hello': 'main'}
+    return {'h': 'i'}
 
 # 여기에 추천 결과 데이터를 넣어서 보내면 됨.
 # @app.post('/recommand')
@@ -70,6 +66,15 @@ def read_root():
 #     return recommended_list
 
 # 애플리케이션이 시작하면 시작되는 함수
+
 @app.on_event('startup')
+async def start_func():
+    await received_data()
+
 async def received_data():
-    await asyncio.create_task(cons_messages())
+    consumer_config_file = '../config/kafka_cons_config.yaml'
+    producer_config_file = '../config/kafka_prod_config.yaml'
+    config_file = '../config/config.yaml'
+
+    processor = KafkaProcessor(consumer_config_file, producer_config_file, config_file)
+    await processor.cons_messages()
