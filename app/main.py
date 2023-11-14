@@ -2,9 +2,7 @@ from typing import Union
 from fastapi import FastAPI
 from pydantic import BaseModel
 from gensim.models.doc2vec import Doc2Vec,TaggedDocument
-# from app.producer.kafka_producer import send_message_confluent, init_producer
-from app.consumer.kafka_consumer import KafkaProcessor
-import asyncio
+from app.Kafka.KafkaProcessor import KafkaProcessor
 
 # TODO conda activate lv3_fastapi
 
