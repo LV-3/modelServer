@@ -1,8 +1,10 @@
 from typing import Union
 from fastapi import FastAPI
+from fastapi import APIRouter
 from pydantic import BaseModel
 from gensim.models.doc2vec import Doc2Vec,TaggedDocument
 from app.Kafka.KafkaProcessor import KafkaProcessor
+from packages.routers import d2v_router
 
 # TODO conda activate lv3_fastapi
 
@@ -65,7 +67,7 @@ def read_root():
 
 # 애플리케이션이 시작하면 시작되는 함수
 
-@app.on_event('startup')
+# @app.on_event('startup')
 async def start_func():
     await received_data()
 

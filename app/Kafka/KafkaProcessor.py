@@ -60,6 +60,7 @@ class KafkaProcessor:
                 
                 # match type(msg.value().decode('utf-8')):
                     # case 'bytes':
+                # TODO: 각 모델 당 21개씩 3번 - 7개씩 추천 결과를 받은 다음 랜덩으로 보냄. (1-7, 8-14, 15-21)
                 try:
                     str_input_data: dict = json.loads(msg.value())
                     model_name: str = str_input_data['modelName']
