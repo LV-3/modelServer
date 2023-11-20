@@ -7,6 +7,7 @@
 
 from fastapi import APIRouter
 from pydantic import BaseModel
+import joblib
 
 #TODO 모델 가져오기 코드
 
@@ -45,9 +46,9 @@ async def get_similar_movies(genre1: str, genre2: str, genre3:str) -> list:
     recommended_list = [elm[0] for elm in similar_documents]
     return recommended_list
 
-# @d2v.post('/predict',tags=['d2v_model'])
-# async def contents_based_rs(data: Model) -> list: # 변경 예정
-#     recommended_list = get_similar_movies(data.genre1, data.genre2, data.genre3)
-#     global DB
-#     DB = recommended_list
-#     return recommended_list
+@d2v.post('/predict',tags=['d2v_model'])
+async def contents_based_rs(data: Model) -> list: # 변경 예정
+    recommended_list = get_similar_movies(data.genre1, data.genre2, data.genre3)
+    global DB
+    DB = recommended_list
+    return recommended_list
