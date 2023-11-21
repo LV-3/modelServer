@@ -1,8 +1,8 @@
 import yaml
 import json
 from confluent_kafka import Consumer, KafkaError, Producer
-from packages.routers.d2v_router import get_similar_movies
-from packages.routers.Sbert_router import simular_description
+from packages.routers import Sbert, Doc2VecModel
+
 
 class KafkaProcessor:
     def __init__(self, consumer_config_path: str, producer_config_file: str, config_file: str) -> None:
@@ -15,8 +15,10 @@ class KafkaProcessor:
         self.consumer = self.init_consumer(consumer_config_path)
         self.producer = self.init_producer(producer_config_file)
 
+        self.sbert = Sbert()
+        self.d2v = Doc2VecModel()
 
-    # consumer init
+
     def init_consumer(self, consumer_config_path: str) -> Consumer:
 
         with open(consumer_config_path, 'r') as config_file:
@@ -26,7 +28,6 @@ class KafkaProcessor:
         return Consumer(cons_config)
 
 
-    # producer init
     def init_producer(self, producer_config_file: str) -> Producer:
 
         with open(producer_config_file, 'r') as config_file:
@@ -38,7 +39,6 @@ class KafkaProcessor:
 
     async def cons_messages(self) -> None:
 
-        # 구독
         self.consumer.subscribe([self.cons_topic])
 
         try:
@@ -69,7 +69,7 @@ class KafkaProcessor:
                         response_data: list = str_input_data['responseData']
                         model_input_data: dict = {item['content_id']: item['description'] for item in response_data}
 
-                        recommended_list: list = await simular_description(model_input_data)
+                        recommended_list: list = await self.sbert.simular_description(model_input_data)
                     
                     print(recommended_list)
 
@@ -77,8 +77,6 @@ class KafkaProcessor:
 
                             # self.send_message_confluent(self.producer, self.prod_topic, recommended_list)
 
-                            
-                            
                 except Exception as e:
                     print('str data error', e)
                     pass
@@ -123,7 +121,7 @@ class KafkaProcessor:
             }
 
             try:
-                model_output = await get_similar_movies(**model_input_test)
+                model_output = await self.d2v.get_similar_movies(**model_input_test)
 
                 return model_output
             except Exception as e:

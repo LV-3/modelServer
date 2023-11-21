@@ -1,15 +1,9 @@
 from typing import Union
-from fastapi import FastAPI
-from fastapi import APIRouter
+from fastapi import FastAPI, Body
 from pydantic import BaseModel
-from gensim.models.doc2vec import Doc2Vec,TaggedDocument
 from app.Kafka.KafkaProcessor import KafkaProcessor
-from packages.routers import d2v_router
-
-# TODO conda activate lv3_fastapi
-
-# TODO BE에서 오는 데이터 모델로 보내기
-# TODO BE랑 모델 서버랑 연결
+from packages.routers import Sbert, Doc2VecModel
+from typing import Union, List
 
 # TODO. 모델 joblib으로 저장하고 불러오는 방식으로 만들기
   # '''
@@ -22,59 +16,65 @@ from packages.routers import d2v_router
 # main.py
 # https://github.com/lsjsj92/fast-api-tutorial/blob/main/main.py
 
-from app.packages.routers import d2v_router  # d2v 모듈을 불러옴
-from app.packages.routers import Sbert_router
-from app.packages.routers import DeepFM_router
 
 app = FastAPI()
 
-# # d2v_router.py에서 d2v라우터 가져오기
-app.include_router(d2v_router.d2v)
-app.include_router(Sbert_router.s_bert)
-app.include_router(DeepFM_router.deepfm)
-
-DB = []
-
-
-class Model(BaseModel):
-    genre1: str
-    genre2: str
-    genre3: str
 
 @app.get('/')
 def read_root():
     return {'h': 'i'}
 
-# 여기에 추천 결과 데이터를 넣어서 보내면 됨.
-# @app.post('/recommand')
-# async def send_message(message: str, topic: str = "testopic"):
-#   send_message_confluent(producer, topic, message)
 
-#   return {
-#      "message": "success!"
-#   }
+# spring - fe에서 Get 요청을 받아서 request로 보냄.
+# 리턴 값으로 받는 것은 모델 당 21개 추천 컨텐츠 데이터.
+class MoodDataItem(BaseModel):
+    content_id: str
+    mood: List[str]
 
-# @app.get('/get_data')
-# async def get_rs_data():
-#     return DB
 
-# @app.post('/input_data')
-# async def contents_based_rs(data: Model):
-#     recommended_list = d2v.get_similar_movies(data.genre1, data.genre2, data.genre3)
-#     global DB
-#     DB = recommended_list
-#     return recommended_list
+class DescriptionDataItem(BaseModel):
+    content_id: str
+    description: str
 
-# 애플리케이션이 시작하면 시작되는 함수
+
+class DataItem(BaseModel):
+    modelName: str
+    responseData: List[Union[MoodDataItem, DescriptionDataItem]]
+
+
+class RequestData(BaseModel):
+    data: List[DataItem]
+
+
+@app.post('/prcs_models')
+def process_multiple_models(request_data: RequestData = Body()):
+    try:
+        
+        d2v = Doc2VecModel()
+        sbert = Sbert()
+        
+        request_d2v_data = request_data.data[0]
+        request_sbert_data = request_data.data[1]
+
+        mood_subsr_json_data = d2v.contents_based_rs(request_d2v_data)
+        desc_subsr_json_data = sbert.simular_description(request_sbert_data)
+        
+        append_json_data = mood_subsr_json_data + desc_subsr_json_data
+        return append_json_data
+    except Exception as e:
+        print(e)
+
+#################################################################
+# Kafka 사용
 
 # @app.on_event('startup')
-async def start_func():
-    await received_data()
+# async def start_func():
+#     await received_data()
 
-async def received_data():
-    consumer_config_file = '../config/kafka_cons_config.yaml'
-    producer_config_file = '../config/kafka_prod_config.yaml'
-    config_file = '../config/config.yaml'
+# async def received_data():
+#     consumer_config_file = '../config/kafka_cons_config.yaml'
+#     producer_config_file = '../config/kafka_prod_config.yaml'
+#     config_file = '../config/config.yaml'
 
-    processor = KafkaProcessor(consumer_config_file, producer_config_file, config_file)
-    await processor.cons_messages()
+#     processor = KafkaProcessor(consumer_config_file, producer_config_file, config_file)
+#     await processor.cons_messages()
