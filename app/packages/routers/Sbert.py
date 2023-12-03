@@ -26,6 +26,9 @@ class Sbert:
         # # 데이터 id 배열
         # self.index.add_with_ids(self.encoded_data, np.array(range(0, len(self.description_list))))
         self.index = faiss.read_index('resource/final_test_sbert_VODs_1127_1100.index')
+
+
+        
     def search(self, query: str) -> dict:
         query_vector = self.model.encode([query]) 
         k = 21

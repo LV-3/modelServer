@@ -1,8 +1,8 @@
 from typing import Union
 from fastapi import FastAPI, Body
 from pydantic import BaseModel
-from app.Kafka.KafkaProcessor import KafkaProcessor
-from packages.routers import Sbert, Doc2VecModel, DeepFM
+# from app.Kafka.KafkaProcessor import KafkaProcessor
+from .packages.routers import Sbert, Doc2VecModel, DeepFM
 from typing import Union, List, Dict
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
