@@ -25,6 +25,8 @@ class DeepFM:
         self.all_genre_dic = {genre: 0 for genre in self.all_genre_list}
         self.sparse_features = ["subsr",'content_id',"ct_cl", "genre_of_ct_cl"] + self.all_genre_list
         self.target = ['liked']
+        self.test_user_09 = pd.read_pickle('resource/test_deepfm_data_1129.pickle')
+        self.df_test_user_09 = pd.DataFrame(self.test_user_09)
     
 
     def prcs_nan_parse_template(self, DF: pd.DataFrame) -> pd.DataFrame:
@@ -37,17 +39,21 @@ class DeepFM:
         return DF
             
 
-    def prcs_template_cols(self, user:pd.DataFrame) -> pd.DataFrame:
-        user['template_group_words'] = None
-
-        for idx in range(len(user)):
-            ml_data_dic = {}
-
+    def prcs_template_cols(self, total_data:pd.DataFrame, user:pd. DataFrame) -> pd.DataFrame:
+        total_data['template_group_words'] = None
+        total_data['is_prefer_content'] = False
+        total_data.loc[total_data['content_id'].isin(user['content_id']), 'is_prefer_content'] = True
+        
+        for idx in range(len(total_data)):
             all_genre_dic = {genre: 0 for genre in self.all_genre_list}
 
-            template_A = user.loc[idx, 'template_A']
-            template_B = user.loc[idx, 'template_B']
-            template_C = user.loc[idx, 'template_C']
+            if not total_data.loc[idx, 'is_prefer_content']:
+                total_data.at[idx, 'template_group_words'] = all_genre_dic
+                continue
+            
+            template_A = total_data.loc[idx, 'template_A']
+            template_B = total_data.loc[idx, 'template_B']
+            template_C = total_data.loc[idx, 'template_C']
 
             if template_A is not None:
                 for elm in template_A:
@@ -64,22 +70,21 @@ class DeepFM:
                     if elm in all_genre_dic:
                         all_genre_dic[elm] = 1
 
-            user.at[idx, 'template_group_words'] = all_genre_dic
+            total_data.at[idx, 'template_group_words'] = all_genre_dic
         # 딕셔너리의 키값을 통해, 데이터프레임에 새로운 칼럼을 만들고
+
         for col in all_genre_dic:
-            user[col] = 0
+            total_data[col] = 0
 
         # 딕셔너리의 키값을 새로운 칼럼에 값을 할당한다.
-        for idx,row in user.iterrows():
+        for idx,row in total_data.iterrows():
             template_group_words = row['template_group_words']
+            for genre, value in template_group_words.items():
+                total_data.at[idx,genre] = template_group_words.get(genre, 0)
 
-        for genre, value in template_group_words.items():
-            user.at[idx,genre] = template_group_words.get(genre,0)
+        total_data.drop(columns=['template_A','template_B','template_C','template_group_words', 'is_prefer_content'],inplace=True)
 
-
-        user.drop(columns=['template_A','template_B','template_C','template_group_words'],inplace=True)
-
-        return user
+        return total_data
 
 
     def load_model(self):
@@ -91,52 +96,61 @@ class DeepFM:
     def get_request_data(self, request_data):
 
         # 요청된 사용자의 선호 컨텐츠
-        personal_data_df = pd.DataFrame([vars(item) for item in request_data])
-        # regex1
+        user_personal_data_df = pd.DataFrame([vars(item) for item in request_data])
+        personal_data_df = self.df_test_user_09
+
+        user_subsr = user_personal_data_df['subsr'][0]
+        personal_data_df['subsr'] = user_subsr
+
         # prcsed_nan_sparse_data = self.prcs_nan_parse_template(personal_data_df)
 
-        # regex2 유저 컨텐츠
-        prcsed_templates_cols_data = self.prcs_template_cols(personal_data_df)
-
-        
-        # 추천되어야 할  리스트 
-        prcsed_templates_cols_data[prcsed_templates_cols_data['subsr']==61931000]
+        # # regex2 유저 컨텐츠
+        prcsed_templates_cols_data = self.prcs_template_cols(personal_data_df, user_personal_data_df)
 
         model = self.load_model()
-        # return prcsed_templates_cols_data
-        inf_data = self.prcs_sparse_fts_get_names(prcsed_templates_cols_data)
+        inf_data = self.prcs_sparse_fts_get_names(prcsed_templates_cols_data, user_subsr)
+
+        # print(type(inf_data))
+        # print(inf_data)
+
         pred_ratio = model.predict(inf_data, batch_size=256)
 
-        # liked 컬럼은 user_preference가 30%(백분율) 이상
-        # threshold를 조절하면 recommend_list 개수를 조절할 수 있다. (많이 뽑고 21개로)
-        threshold = 0.5
+        # print(pred_ratio)
 
-        pred_labels = (pred_ratio > threshold).astype(int)
+        # # # liked 컬럼은 user_preference가 30%(백분율) 이상
+        # # # threshold를 조절하면 recommend_list 개수를 조절할 수 있다. (많이 뽑고 21개로)
+        # threshold = 0.5
 
-        result_df = prcsed_templates_cols_data[['subsr', 'content_id', 'liked']].copy()
-        result_df['predicted_liked'] = pred_labels
-        result_df['predicted_rate'] = pred_ratio
-        result_df.reset_index(drop=True,inplace=True)
+        # pred_labels = (pred_ratio > threshold).astype(int)
 
-        recommend_content_id = result_df[result_df['predicted_liked']==1]['content_id'].tolist()
+        # # 추천되어야 할 컨텐츠들의 리스트 (9월 전체 vod 리스트)
+        # result_df = recommend_test_user_09[['subsr', 'content_id', 'liked']].copy()
+
+        # print(result_df)
+        # result_df['predicted_liked'] = pred_labels
+        # result_df['predicted_rate'] = pred_ratio
+        # result_df.reset_index(drop=True,inplace=True)
+
+        # print(result_df)
+
+        # recommend_content_id = result_df[result_df['predicted_liked']==1]['content_id'].tolist()
         
-        return recommend_content_id
+        # return recommend_content_id
+    
 
+    def prcs_sparse_fts_get_names(self, query: pd.DataFrame, append_subsr):
 
-    def prcs_sparse_fts_get_names(self, prcsed_data):
         # 자바 스프링부트에서 받은 데이터가 들어온다.
-        new_data = prcsed_data
+        new_data_drop_target_col = query.copy()
 
-        # new_data.drop(columns=['liked'],inplace=True)
-
-        new_data_drop_target_col = new_data.drop(columns=['liked'])
+        new_data_drop_target_col['subsr'] = append_subsr
 
         for feat in self.sparse_features:
             lbe = LabelEncoder()
             new_data_drop_target_col[feat] = lbe.fit_transform(new_data_drop_target_col[feat])
 
-        fixlen_feature_columns = [SparseFeat(feat, new_data[feat].nunique())
-                                    for feat in self.sparse_features]
+        fixlen_feature_columns = [SparseFeat(feat, new_data_drop_target_col[feat].nunique())
+                                for feat in self.sparse_features]
 
         linear_feature_columns = fixlen_feature_columns
 
@@ -144,17 +158,10 @@ class DeepFM:
 
         feature_names = get_feature_names(linear_feature_columns + dnn_feature_columns)
 
-        for feat in self.sparse_features:
-            lbe = LabelEncoder()
-            new_data_drop_target_col[feat] = lbe.fit_transform(new_data_drop_target_col[feat])
-
         # Prepare input data for the model
         new_model_input = {name: new_data_drop_target_col[name] for name in feature_names}
 
         return new_model_input
-    
-
-
         
 
 
