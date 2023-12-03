@@ -26,7 +26,11 @@ class Doc2VecModel:
 
 
     def get_contents_based_rs(self, request_data) -> list: # 변경 예정
-        md_list = [item.mood for item in request_data]
+        md_list = []
+        for item in request_data:
+            if item.mood is not None:
+                md_list.append(item.mood)
+            # md_list = [item.mood for item in request_data]
         flat_md_list = [item for sublist in md_list for item in sublist]
         
         res_md_list = self.get_similar_movies(flat_md_list)
