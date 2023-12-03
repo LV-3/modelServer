@@ -73,7 +73,7 @@ class ResponseData(BaseModel):
 @app.post('/prcs_models')
 def process_multiple_models(request_data: RequestData = Body()):
     try:
-
+        print(request_data)
         # print('###################################################\nReceive data\n', request_data)
         
         d2v = Doc2VecModel()
@@ -86,11 +86,13 @@ def process_multiple_models(request_data: RequestData = Body()):
 
         print('sucess receive data')
 
-        mood_subsr_json_data = d2v.get_contents_based_rs(request_d2v_data)
+        # mood_subsr_json_data = d2v.get_contents_based_rs(request_d2v_data)
+        mood_subsr_json_data = [ str(x) for x in range(21)]
         print('mood done.', mood_subsr_json_data)
         desc_subsr_json_data = sbert.get_simular_description(request_sbert_data)
         print('desc done.', desc_subsr_json_data)
-        pers_subsr_json_data = deepfm.get_request_data(request_deepfm_data)
+        # temp = deepfm.get_request_data(request_deepfm_data)
+        pers_subsr_json_data = [ str(x) for x in range(21)]
         print('pers done.', pers_subsr_json_data)
 
         response_data = ResponseData(
@@ -114,11 +116,23 @@ async def create_item(request: Request):
 
     try:
         body_str = body.decode("utf-8")
-        print(body_str)
+
         json_load_data = json.loads(body_str)
-        return {"message": f"Received data: {json_load_data}"}
+        json_encoded_data = jsonable_encoder(json_load_data)
+        return JSONResponse(content=json_encoded_data)   
+    
     except UnicodeDecodeError:
-        raise HTTPException(status_code=400, detail="Invalid UTF-8 encoding")
+        raise HTTPException(status_code=400, detail="Invalid UTF-8 encoding" )
+
+
+@app.post("/deepfm")
+def deepfm(request_data: RequestData = Body()):
+    deepfm = DeepFM()
+    request_deepfm_data = request_data.personal_data
+    temp = deepfm.get_request_data(request_deepfm_data)
+
+
+
 
 #################################################################
 # Kafka 사용
