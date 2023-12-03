@@ -126,4 +126,4 @@ def get_request_data_2_Rs(self,request_data) -> list[int]:
   recommed_content_id_list = self.predict2rs_list(request_data=request_data,
                                                   model_input_data=prcsed_model_input)
 
-  return recommed_content_id_list
+  return recommed_content_id_list.astype(str)
