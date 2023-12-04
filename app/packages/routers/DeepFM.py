@@ -10,6 +10,9 @@ from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 from deepctr_torch.inputs import SparseFeat, get_feature_names
 from deepctr_torch.models import DeepFM
 
+
+# import pickle5 as pickle
+
 class DeepFM:
     
     def __init__(self):
@@ -26,6 +29,11 @@ class DeepFM:
         self.sparse_features = ["subsr",'content_id',"ct_cl", "genre_of_ct_cl"] + self.all_genre_list
         self.target = ['liked']
         self.test_user_09 = pd.read_pickle('app/resource/test_deepfm_data_1129.pickle')
+        
+        # with open('app/resource/test_deepfm_data_1129.pickle','rb') as fr:
+        #     self.test_user_09 = pickle.load(fr)
+
+
         self.df_test_user_09 = pd.DataFrame(self.test_user_09)
     
 
