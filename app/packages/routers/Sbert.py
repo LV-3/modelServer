@@ -48,4 +48,4 @@ class Sbert:
         return subsr_list
     
     def save(self):
-        faiss.write_index(self.index, 'resource/save_index.index')
+        faiss.write_index(self.index, 'app/resource/save_index.index')
