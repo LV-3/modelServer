@@ -27,9 +27,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v2 #python 3.8은 v2
+      - uses: actions/setup-python@v3
         with:
-          python-version: "3.8"
+          python-version: "3.9"
       - run: pip install -r requirements.txt
   build:
     needs: [run-test-code] # 이 코드 실행 후에 빌드 함
@@ -38,7 +38,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Set up python 3.9
-        uses: actions/setup-python@v4 #python 3.10은 v4
+        uses: actions/setup-python@v3 
         with:
           python-version: "3.9"
       - name: Install Dependencies
