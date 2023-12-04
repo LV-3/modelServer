@@ -1,21 +1,16 @@
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+import pandas as pd
 
 class Doc2VecModel:
     def __init__(self):
-        # tagged_documents = [ TaggedDocument(words=row['words'], tags=[row['tags']]) for _, row in df.iterrows() ]
-
-        self.documents = [
-            TaggedDocument(words=["comedy", "action", "crime", "first", "detective"], tags=["극한직업"]),
-            TaggedDocument(words=["animation", "drama", "melodrama", "romance"], tags=["너의 이름은"]),
-            TaggedDocument(words=["action", "crime", "drama"], tags=["더 배트맨"]),
-        ]
+        self.documents = pd.read_pickle('resource/tagged_documents.pickle')
         self.model = Doc2Vec(vector_size=20, window=2, min_count=1, workers=4, epochs=100)
         self.model.build_vocab(self.documents)
         self.model.train(self.documents, total_examples=self.model.corpus_count, epochs=self.model.epochs)
 
         
-    # def tagging_words(self, mood_df) -> TaggedDocument:
-        # tagged_documents = [TaggedDocument(words = row['words'], tags=[row['tags']]) for _, row in mood_df.iterrows()]
+    def tagging_words(self, mood_df) -> TaggedDocument:
+        tagged_documents = [TaggedDocument(words = row['words'], tags=[row['tags']]) for _, row in mood_df.iterrows()]
 
 
     def get_similar_movies(self, mood_list) -> list:
