@@ -25,7 +25,7 @@ class DeepFM:
         self.all_genre_dic = {genre: 0 for genre in self.all_genre_list}
         self.sparse_features = ["subsr",'content_id',"ct_cl", "genre_of_ct_cl"] + self.all_genre_list
         self.target = ['liked']
-        self.test_user_09 = pd.read_pickle('resource/test_deepfm_data_1129.pickle')
+        self.test_user_09 = pd.read_pickle('app/resource/test_deepfm_data_1129.pickle')
         self.df_test_user_09 = pd.DataFrame(self.test_user_09)
     
 

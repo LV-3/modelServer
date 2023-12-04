@@ -10,12 +10,12 @@ class Doc2VecModel:
 
         
     def tagging_words(self, mood_df) -> TaggedDocument:
-        tagged_documents = [TaggedDocument(words = row['words'], tags=[row['tags']]) for _, row in mood_df.iterrows()]
+        tagged_documents = [TaggedDocument(words = row['extend_template'], tags=[row['title']]) for _, row in mood_df.iterrows()]
 
 
     def get_similar_movies(self, mood_list) -> list:
         inferred_vector = self.model.infer_vector(mood_list)
-        similar_documents = self.model.dv.most_similar([inferred_vector])
+        similar_documents = self.model.dv.most_similar([inferred_vector], topn=21)
         recommended_list = [elm[0] for elm in similar_documents]
         return recommended_list
 

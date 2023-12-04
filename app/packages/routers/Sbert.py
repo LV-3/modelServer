@@ -6,7 +6,7 @@ from sentence_transformers import SentenceTransformer
 class Sbert:
     def __init__(self):
         # self.movie = movie = pd.read_pickle('resource/movie.pickle')
-        self.movie = pd.read_csv('resource/final_test_sbert_VODs_1127_1100.csv')
+        self.movie = pd.read_csv('app/resource/final_test_sbert_VODs_1127_1100.csv')
         self.description_list = self.movie['SMRY'].to_list()
         self.model_args ={
             'sbert_klue' : 'snunlp/KR-SBERT-V40K-klueNLI-augSTS',
@@ -25,7 +25,7 @@ class Sbert:
 
         # # 데이터 id 배열
         # self.index.add_with_ids(self.encoded_data, np.array(range(0, len(self.description_list))))
-        self.index = faiss.read_index('resource/final_test_sbert_VODs_1127_1100.index')
+        self.index = faiss.read_index('app/resource/final_test_sbert_VODs_1127_1100.index')
 
 
         
@@ -48,4 +48,4 @@ class Sbert:
         return subsr_list
     
     def save(self):
-        faiss.write_index(self.index, 'resource/save_index.index')
+        faiss.write_index(self.index, 'app/resource/save_index.index')
