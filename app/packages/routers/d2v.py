@@ -16,7 +16,7 @@ class Doc2VecModel:
     def get_similar_movies(self, mood_list) -> list:
         inferred_vector = self.model.infer_vector(mood_list)
         similar_documents = self.model.dv.most_similar([inferred_vector], topn=21)
-        recommended_list = [elm[0] for elm in similar_documents]
+        recommended_list = [str(elm[0]) for elm in similar_documents]
         return recommended_list
 
 
