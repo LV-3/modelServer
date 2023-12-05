@@ -3,7 +3,7 @@ import pandas as pd
 
 class Doc2VecModel:
     def __init__(self):
-        self.documents = pd.read_pickle('app/resource/tagged_documents.pickle')
+        self.documents = pd.read_pickle('app/resources/tagged_documents.pickle')
         self.model = Doc2Vec(vector_size=20, window=2, min_count=1, workers=4, epochs=100)
         self.model.build_vocab(self.documents)
         self.model.train(self.documents, total_examples=self.model.corpus_count, epochs=self.model.epochs)
