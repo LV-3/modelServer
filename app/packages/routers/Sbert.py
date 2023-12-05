@@ -23,7 +23,7 @@ class Sbert:
         # # 임베딩한 값을 faiss 인덱스에 저장함.
         # self.index = faiss.IndexIDMap(faiss.IndexFlatIP(768))
 
-        
+
         self.index = faiss.read_index('app/resource/Union_SMRY_RoBERTa_emb.index')
 
 
@@ -38,6 +38,7 @@ class Sbert:
 
     def embedding(self, query: str):
         
+        # 문장 임베딩 임베딩
         inputs = self.tokenizer(query, padding=True, truncation=True, return_tensors="pt")
         embeddings, _ = self.model(**inputs, return_dict=False)
 
