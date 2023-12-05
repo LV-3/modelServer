@@ -86,7 +86,7 @@ class DeepFM_V2:
 
     # Predict, 전체 컨텐츠에 대해서, predicted_liked 가 1인 것을 예측하고,
     # predicted_liked가 1인 content_id를 리턴한다.
-    def predict2rs_list(self, request_data, model_input_data) -> list:
+    def predict2rs_list(self, request_data: pd.DataFrame, model_input_data) -> list:
         model = self.load_model()
 
         pred_ans = model.predict(model_input_data,batch_size=256)
