@@ -27,13 +27,13 @@ class DeepFM_V2:
 
     
     def load_model(self):
-        model = torch.load('app/resource/DeepFM.h5')
+        model = torch.load('app/resources/DeepFM.h5')
         
         return model
   
 
     def load_label_encoder(self):
-        label_encoders = torch.load('app/resource/label_encoders_1202_1136.pth')
+        label_encoders = torch.load('app/resources/label_encoders_1202_1136.pth')
 
         return label_encoders
 
@@ -45,24 +45,19 @@ class DeepFM_V2:
   
 
     # 53 개의 컬럼을 원핫인코딩 template_A : ['words1','words2',,,] -> | words1 | words2 | ,,, 
-    def prcs_MakeModelDataSet(self, user: pd.DataFrame) -> pd.DataFrame:
+    def MakeModelDataSet2(self, user: pd.DataFrame) -> pd.DataFrame:
         # Create a DataFrame with zeros for the genres
         genre_df = pd.DataFrame(0, index=user.index, columns=self.all_genre_list)
 
         templates = user[['template_A_TopGroup', 'template_B_TopGroup', 'template_C_TopGroup']].apply(lambda row: list(set(item for sublist in row.dropna() for item in sublist)), axis=1)
 
-        # Update the genre_df using vectorized operations with tqdm
         for genre in self.all_genre_list:
-            genre_df[genre] = templates(lambda x: 1 if genre in x else 0)
+            genre_df[genre] = templates.apply(lambda x: 1 if genre in x else 0)
 
-        # Drop unnecessary columns
         user.drop(columns=['template_A_TopGroup', 'template_B_TopGroup', 'template_C_TopGroup'], inplace=True)
-
-        returned_df = pd.concat([user,genre_df],axis=1)
-
+        
+        returned_df = pd.concat([user, genre_df], axis=1)
         return returned_df
-  
-
 
     def prcs_Model_Input(self, prcsed_data: pd.DataFrame) -> dict:
 
@@ -91,7 +86,7 @@ class DeepFM_V2:
 
     # Predict, 전체 컨텐츠에 대해서, predicted_liked 가 1인 것을 예측하고,
     # predicted_liked가 1인 content_id를 리턴한다.
-    def predict2rs_list(self, request_data, model_input_data) -> list[str]:
+    def predict2rs_list(self, request_data, model_input_data) -> list:
         model = self.load_model()
 
         pred_ans = model.predict(model_input_data,batch_size=256)
@@ -102,17 +97,19 @@ class DeepFM_V2:
         total_list = dict(zip(request_data['content_id'], pred_labels))
 
         # predicted_liked가 1인 content_id만 추출하기.
-        recommend_list =  [ key for key, value in total_list.items() if value == 1]
+        recommend_list =  [ str(key) for key, value in total_list.items() if value == 1]
 
         return recommend_list
 
 
-    def get_request_data_2_Rs(self, request_data) -> list[int]:
-        prcsed_data = self.prcs_MakeModelDataSet(user = request_data)
+    def get_request_data_2_Rs(self, request_data) -> list:
+        user_personal_data_df = pd.DataFrame([vars(item) for item in request_data])
+        
+        prcsed_data = self.MakeModelDataSet2(user = user_personal_data_df)
 
         prcsed_model_input = self.prcs_Model_Input(prcsed_data = prcsed_data)
 
         recommed_content_id_list = self.predict2rs_list(request_data=request_data,
                                                         model_input_data=prcsed_model_input)
 
-        return recommed_content_id_list.astype(str)
+        return recommed_content_id_list
