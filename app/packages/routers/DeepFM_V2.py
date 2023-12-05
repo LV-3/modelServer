@@ -53,7 +53,7 @@
 
 #       # Update the genre_df using vectorized operations with tqdm
 #       for genre in self.all_genre_list:
-#           genre_df[genre] = templates(lambda x: 1 if genre in x else 0)
+#           genre_df[genre] = templates.apply(lambda x: 1 if genre in x else 0)
 
 
 #       # Drop unnecessary columns
