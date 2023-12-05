@@ -3,7 +3,7 @@ import pandas as pd
 
 class Doc2VecModel:
     def __init__(self):
-        self.documents = pd.read_pickle('resource/tagged_documents.pickle')
+        self.documents = pd.read_pickle('app/resource/tagged_documents.pickle')
         self.model = Doc2Vec(vector_size=20, window=2, min_count=1, workers=4, epochs=100)
         self.model.build_vocab(self.documents)
         self.model.train(self.documents, total_examples=self.model.corpus_count, epochs=self.model.epochs)
@@ -16,7 +16,7 @@ class Doc2VecModel:
     def get_similar_movies(self, mood_list) -> list:
         inferred_vector = self.model.infer_vector(mood_list)
         similar_documents = self.model.dv.most_similar([inferred_vector], topn=21)
-        recommended_list = [elm[0] for elm in similar_documents]
+        recommended_list = [str(elm[0]) for elm in similar_documents]
         return recommended_list
 
 
