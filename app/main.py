@@ -87,11 +87,11 @@ def process_multiple_models(request_data: RequestData = Body()):
 
         print('sucess receive data')
 
-        # mood_subsr_json_data = d2v.get_contents_based_rs(request_d2v_data)
+        mood_subsr_json_data = d2v.get_contents_based_rs(request_d2v_data)
         # mood_subsr_json_data = [ str(x) for x in range(21)]
-        # print('mood done.', mood_subsr_json_data)
-        # desc_subsr_json_data = sbert.get_simular_description(request_sbert_data)
-        # print('desc done.', desc_subsr_json_data)
+        print('mood done.', mood_subsr_json_data)
+        desc_subsr_json_data = sbert.search(request_sbert_data)
+        print('desc done.', desc_subsr_json_data)
         pers_subsr_json_data = deepfm_v2.get_request_data_2_Rs(request_deepfm_data)
         # pers_subsr_json_data = [ str(x) for x in range(21)]
         print('pers done.', pers_subsr_json_data)
