@@ -1,7 +1,7 @@
 from typing import Union
 from fastapi import FastAPI, Body
 from pydantic import BaseModel
-from .packages.routers import Sbert, Doc2VecModel, DeepFM, DeepFM_V2
+from .packages.routers import Sbert, Doc2VecModel, DeepFM
 from typing import Union, List
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
@@ -61,7 +61,7 @@ def process_multiple_models(request_data: RequestData = Body()):
         
         d2v = Doc2VecModel()
         sbert = Sbert()
-        deepfm_v2 = DeepFM_V2()
+        deepfm = DeepFM()
         
         request_d2v_data = request_data.mood_data
         request_sbert_data = request_data.description_data
@@ -73,7 +73,7 @@ def process_multiple_models(request_data: RequestData = Body()):
         print('mood done.', mood_subsr_json_data)
         desc_subsr_json_data = sbert.search(request_sbert_data)
         print('desc done.', desc_subsr_json_data)
-        pers_subsr_json_data = deepfm_v2.get_request_data_2_Rs(request_deepfm_data)
+        pers_subsr_json_data = deepfm.get_request_data_2_Rs(request_deepfm_data)
         print('pers done.', pers_subsr_json_data)
 
         response_data = ResponseData(

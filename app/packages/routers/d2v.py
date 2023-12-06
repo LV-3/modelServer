@@ -1,6 +1,5 @@
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 import pandas as pd
-from app.main import MoodDataItem
 
 
 class Doc2VecModel:
@@ -23,7 +22,7 @@ class Doc2VecModel:
         return recommended_list
 
 
-    def get_contents_based_rs(self, request_data: MoodDataItem) -> list[str]:
+    def get_contents_based_rs(self, request_data) -> list[str]:
         md_list = []
         
         for item in request_data:

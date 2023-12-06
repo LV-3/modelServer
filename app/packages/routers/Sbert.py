@@ -27,7 +27,8 @@ class Sbert:
 
     def search(self, query: str) -> list[str]:
 
-        query_vector = self.embedding(query)
+        desc_list = [item.description for item in query]
+        query_vector = self.embedding(desc_list)
         query_vector_np = np.array(query_vector).reshape(1,-1)
 
         k = 21
