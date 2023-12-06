@@ -1,0 +1,2 @@
+prod_topic: 'producing-test'
+cons_topic: 'kafka-test'
