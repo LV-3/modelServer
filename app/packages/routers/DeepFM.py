@@ -32,21 +32,21 @@ class DeepFM:
   
 
     # 53 개의 컬럼을 원핫인코딩 template_A : ['words1','words2',,,] -> | words1 | words2 | ,,, 
-    def MakeModelDataSet2(self, request_df: pd.DataFrame) -> pd.DataFrame:
+    def MakeModelDataSet2(self, request_request_data: pd.DataFrame) -> pd.DataFrame:
 
-        genre_df = pd.DataFrame(0, index = request_df.index, columns=self.all_genre_list)
+        genre_request_data = pd.DataFrame(0, index = request_request_data.index, columns=self.all_genre_list)
 
-        templates = request_df[['template_A_TopGroup', 'template_B_TopGroup', 'template_C_TopGroup']].apply(lambda row: list(set(item for sublist in row.dropna() 
+        templates = request_request_data[['template_A_TopGroup', 'template_B_TopGroup', 'template_C_TopGroup']].apply(lambda row: list(set(item for sublist in row.dropna() 
                                                                                                                                  for item in sublist)), axis=1)
 
         for genre in self.all_genre_list:
-            genre_df[genre] = templates.apply(lambda x: 1 if genre in x else 0)
+            genre_request_data[genre] = templates.apply(lambda x: 1 if genre in x else 0)
 
-        request_df.drop(columns=['template_A_TopGroup', 'template_B_TopGroup', 'template_C_TopGroup'], inplace=True)
+        request_request_data.drop(columns=['template_A_TopGroup', 'template_B_TopGroup', 'template_C_TopGroup'], inplace=True)
         
-        returned_df = pd.concat([request_df, genre_df], axis=1)
+        returned_request_data = pd.concat([request_request_data, genre_request_data], axis=1)
         
-        return returned_df
+        return returned_request_data
 
 
     def prcs_Model_Input(self, prcsed_data: pd.DataFrame) -> dict:
@@ -79,14 +79,20 @@ class DeepFM:
         
         pred_ans_avg = pred_ans.sum()/len(pred_ans)
 
-
         threshold = pred_ans_avg
         pred_labels = (pred_ans > threshold).astype(int)
 
-        total_list = dict(zip(request_data['content_id'], pred_labels))
+        request_data['pred_ans'] = pred_ans
+        request_data['pred_labels'] = pred_labels
 
-        recommend_list =  [str(key) for key, value in total_list.items() if value == 1]
-        # TODO 21개 뽑는 로직다시 생각하기
+        temp_dic_list = [
+            {'content_id': request_data.loc[idx, 'content_id'], 'pred_ans': request_data.loc[idx, 'pred_ans'], 'pred_labels': request_data.loc[idx, 'pred_labels']}
+            for idx in range(len(request_data))
+        ]
+        pred_dic_list_sorted = sorted(temp_dic_list, key=lambda elm: elm['pred_ans'], reverse=True)
+
+        recommend_list = [str(item['content_id']) for item in pred_dic_list_sorted if item['pred_labels'] == 1]
+
         recommend_list = recommend_list[:21]
 
         return recommend_list
@@ -94,13 +100,13 @@ class DeepFM:
 
     def get_request_data_2_Rs(self, request_data: dict) -> list:
 
-        request_df_personal_data_df = pd.DataFrame([vars(item) for item in request_data])
+        request_request_data_personal_data_request_data = pd.DataFrame([vars(item) for item in request_data])
         
-        prcsed_data = self.MakeModelDataSet2(request_df = request_df_personal_data_df)
+        prcsed_data = self.MakeModelDataSet2(request_request_data = request_request_data_personal_data_request_data)
 
         prcsed_model_input = self.prcs_Model_Input(prcsed_data = prcsed_data)
 
-        recommed_content_id_list = self.predict2rs_list(request_data = request_df_personal_data_df,
+        recommed_content_id_list = self.predict2rs_list(request_data = request_request_data_personal_data_request_data,
                                                         model_input_data = prcsed_model_input)
 
         return recommed_content_id_list
