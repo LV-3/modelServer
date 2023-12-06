@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import faiss
-from transformers import AutoModel, AutoTokenizer
 import pickle
 import random
 
@@ -14,16 +13,6 @@ class Sbert:
         with open('app/resources/FaissIndex2Content_id.pickle','rb') as pickle_file:
             self.FaissIndex2Content_id = pickle.load(pickle_file)
 
-        self.model = AutoModel.from_pretrained('BM-K/KoDiffCSE-RoBERTa')
-        self.tokenizer = AutoTokenizer.from_pretrained('BM-K/KoDiffCSE-RoBERTa')
-
-
-    def embedding(self, query: str):
-        
-        inputs = self.tokenizer(query, padding=True, truncation=True, return_tensors="pt")
-        embeddings, _ = self.model(**inputs, return_dict=False)
-
-        return embeddings[0][0].tolist()
 
     def ContentId2FaissIndex(self, content_id: int) -> np.ndarray:
         faiss_index = self.FaissIndex2Content_id.get(content_id)
