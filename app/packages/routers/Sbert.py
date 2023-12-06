@@ -8,9 +8,9 @@ import pickle
 class Sbert:
     def __init__(self):
 
-        self.index = faiss.read_index('app/resource/Union_SMRY_RoBERTa_emb.index')
+        self.index = faiss.read_index('app/resources/Union_SMRY_RoBERTa_emb.index')
 
-        with open('app/resource/FaissIndex2Content_id.pickle','rb') as pickle_file:
+        with open('app/resources/FaissIndex2Content_id.pickle','rb') as pickle_file:
             self.FaissIndex2Content_id = pickle.load(pickle_file)
 
         self.model = AutoModel.from_pretrained('BM-K/KoDiffCSE-RoBERTa')
