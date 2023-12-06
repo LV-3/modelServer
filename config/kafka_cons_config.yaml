@@ -1,3 +1,0 @@
-bootstrap.servers: "15.164.220.110:9092"
-group.id: my-group
-auto.offset.reset: earliest
