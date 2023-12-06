@@ -7,6 +7,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from fastapi import Request, HTTPException
 import json
+import time
 
 
 
@@ -58,10 +59,21 @@ def test(data):
 @app.post('/prcs_models')
 def process_multiple_models(request_data: RequestData = Body()):
     try:
-        
+        ST = time.time()
         d2v = Doc2VecModel()
+        ED = time.time()
+        print('d2v 모델 초기화 시간: ', ED-ST)
+
+        ST = time.time()
         sbert = Sbert()
+        ED = time.time()
+        print('bert 모델 초기화 시간: ', ED-ST)
+        
+        ST = time.time()
         deepfm = DeepFM()
+        ED = time.time()
+        print('fm 모델 초기화 시간: ', ED-ST)
+        
         
         request_d2v_data = request_data.mood_data
         request_sbert_data = request_data.description_data
@@ -69,11 +81,22 @@ def process_multiple_models(request_data: RequestData = Body()):
 
         print('sucess receive data')
 
+        ST = time.time()
         mood_subsr_json_data = d2v.get_contents_based_rs(request_d2v_data)
+        ED = time.time()
+        print('d2v 모델 연산 시간: ', ED-ST)
         print('mood done.', mood_subsr_json_data)
+
+        ST = time.time()
         desc_subsr_json_data = sbert.search(request_sbert_data)
+        ED = time.time()
+        print('bert 모델 연산 시간: ', ED-ST)
         print('desc done.', desc_subsr_json_data)
+
+        ST = time.time()
         pers_subsr_json_data = deepfm.get_request_data_2_Rs(request_deepfm_data)
+        ED = time.time()
+        print('fm 모델 연산 시간: ', ED-ST)
         print('pers done.', pers_subsr_json_data)
 
         response_data = ResponseData(
