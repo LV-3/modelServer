@@ -1,14 +1,7 @@
-# import pandas as pd
-# import torch
-# import numpy as np
-# import ast
-
-# from sklearn.metrics import accuracy_score
-# from sklearn.model_selection import train_test_split
-# from sklearn.preprocessing import LabelEncoder, MinMaxScaler
-
-# from deepctr_torch.inputs import SparseFeat, get_feature_names
-# from deepctr_torch.models import DeepFM
+import pandas as pd
+import torch
+import numpy as np
+from deepctr_torch.inputs import SparseFeat, get_feature_names
 
 # class DeepFM:
 
@@ -28,14 +21,16 @@
 #     self.sparse_features = ["subsr", 'content_id', "ct_cl", "genre_of_ct_cl"] 
 
     
-#   # Load 
-#   def load_model(self):
-#      model = torch.load('resource/DeepFM.h5')
-#      return model
+    def load_model(self):
+        model = torch.load('app/resources/DeepFM_epoch_1206.h5')
+
+        return model
   
-#   def load_label_encoder(self):
-#      label_encoders = torch.load('resuorce/label_encoders_1202.pth')
-#      return label_encoders
+
+    def load_label_encoder(self):
+        label_encoders = torch.load('app/resources/label_encoders_1206.pth')
+
+        return label_encoders
 
 
 
@@ -90,16 +85,14 @@
 #     return prcsed_model_input
 
 
-# # -------------------------------------------------------------------------------------------------------
+    # Predict, 전체 컨텐츠에 대해서, predicted_liked 가 1인 것을 예측하고,
+    # predicted_liked가 1인 content_id를 리턴한다.
+    def predict2rs_list(self, request_data: pd.DataFrame, model_input_data: dict) -> list:
+        model = self.load_model()
 
-
-# # Predict, 전체 컨텐츠에 대해서, predicted_liked 가 1인 것을 예측하고,
-# # predicted_liked가 1인 content_id를 리턴한다.
-# def predict2rs_list(self,request_data,model_input_data) -> list[int]:
-#   model = self.load_model()
-
-#   pred_ans = model.predict(model_input_data,batch_size=256)
-#   pred_labels = (pred_ans > 0.2).astype(int)
+        pred_ans = model.predict(model_input_data,batch_size=256)
+        pred_ans_avg = pred_ans.mean
+        pred_labels = (pred_ans > 0.001).astype(int)
 
 #   # Recommend List
 #  # 전체 컨텐츠에 대한 딕셔너리를 만들고
@@ -110,20 +103,16 @@
 #   return recommend_list
 
 
+    def get_request_data_2_Rs(self, request_data: dict) -> list:
+        user_personal_data_df = pd.DataFrame([vars(item) for item in request_data])
+        # user_personal_data_df['subsr']= user_personal_data_df['subsr'].astype(int)
+        # user_personal_data_df['content_id']= user_personal_data_df['content_id'].astype(int)
+        
+        prcsed_data = self.MakeModelDataSet2(user = user_personal_data_df)
 
+        prcsed_model_input = self.prcs_Model_Input(prcsed_data = prcsed_data)
 
-# # -------------------------------------------------------------------------------------------------------
-
-
-# def get_request_data_2_Rs(self,request_data) -> list[int]:
-#   # TODO BE로 부터 받는 데이터 넣기
-
-
-#   prcsed_data = self.prcs_MakeModelDataSet(request_data = request_data)
-
-#   prcsed_model_input = self.prcs_Model_Input(prcsed_data = prcsed_data)
-
-#   recommed_content_id_list = self.predict2rs_list(request_data=request_data,
+#   recommed_content_id_list = self.predict2rs_list(request_data=user_personal_data_df,
 #                                                   model_input_data=prcsed_model_input)
 
 #   return recommed_content_id_list.astype(str)
