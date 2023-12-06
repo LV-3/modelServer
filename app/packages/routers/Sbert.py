@@ -3,12 +3,13 @@ import pandas as pd
 import faiss
 from transformers import AutoModel, AutoTokenizer
 import pickle
+import random
 
 
 class Sbert:
     def __init__(self):
 
-        self.index = faiss.read_index('app/resources/Union_SMRY_RoBERTa_emb.index')
+        self.index = faiss.read_index('app/resources/Union_SMRY_RoBERTa_emb_v2.index')
 
         with open('app/resources/FaissIndex2Content_id.pickle','rb') as pickle_file:
             self.FaissIndex2Content_id = pickle.load(pickle_file)
@@ -24,17 +25,29 @@ class Sbert:
 
         return embeddings[0][0].tolist()
 
+    def ContentId2FaissIndex(self, content_id: int) -> np.ndarray:
+        faiss_index = self.FaissIndex2Content_id.get(content_id)
+        emb = self.index.reconstruct(faiss_index)
+        emb_np = np.array(emb).reshape(1, -1)
+        return emb_np
+    
+    def search(self, query: dict) -> list[str]:
+        
+        content_id_list = [int(item.content_id) for item in query]
+        print("content_id_list: ",content_id_list)
+        query_list = []
 
-    def search(self, query: str) -> list[str]:
+        for content_id in content_id_list:
+            query = self.ContentId2FaissIndex(content_id)
+            query_list.append(query)
 
-        desc_list = [item.description for item in query]
-        query_vector = self.embedding(desc_list)
-        query_vector_np = np.array(query_vector).reshape(1,-1)
+        query_array = np.vstack(query_list)
 
         k = 21
+        D, I = self.index.search(query_array, k)
 
-        D,I = self.index.search(query_vector_np,k)
         index_list = I.flatten().tolist()
+        index_list = random.sample(index_list, 21)
 
         recommend_content_id = [str(self.FaissIndex2Content_id.get(key)) for key in self.FaissIndex2Content_id.keys() if key in index_list]
 
