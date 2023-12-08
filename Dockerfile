@@ -1,6 +1,6 @@
 # https://fastapi.tiangolo.com/deployment/docker/
 
-FROM python:3.9-slim
+FROM python:3.9-slim-buster
 
 WORKDIR /code
 
