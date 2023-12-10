@@ -2,6 +2,8 @@ import pandas as pd
 import torch
 import numpy as np
 from deepctr_torch.inputs import SparseFeat, get_feature_names
+import pickle
+from collections import Counter
 
 class DeepFM:
     def __init__(self):
@@ -18,6 +20,9 @@ class DeepFM:
         
         self.sparse_features = ["subsr", 'content_id', "ct_cl", "genre_of_ct_cl"] 
 
+        with open('app/resources/content_id_template.pkl', 'rb') as file:
+            self.content_id_template = pickle.load(file)
+            
     
     def load_model(self):
         model = torch.load('app/resources/DeepFM_epoch_1206.h5')
@@ -97,6 +102,28 @@ class DeepFM:
 
         return recommend_list
 
+    def extract_template_word_list(self, recommended_content_ids: list):
+        word_list = []
+        
+        for content_id in recommended_content_ids:
+            content_id = int(content_id)
+            template_words = self.content_id_template.get(content_id)
+            if not pd.isna(template_words):
+                word_list.extend(template_words.split(', '))
+            else:
+                continue
+
+        word_count = Counter(word_list)
+
+        duplicate_words = {word: count for word, count in word_count.items() if count > 1}
+
+        sorted_duplicate_words = dict(sorted(duplicate_words.items(), key=lambda item: item[1], reverse=True))
+
+        top_three_duplicates = list(sorted_duplicate_words.keys())[:3]
+        top_three_str = ', '.join(top_three_duplicates)
+        return top_three_str
+
+
 
     def get_request_data_2_Rs(self, request_data: dict) -> list:
 
@@ -108,5 +135,9 @@ class DeepFM:
 
         recommed_content_id_list = self.predict2rs_list(request_data = request_request_data_personal_data_request_data,
                                                         model_input_data = prcsed_model_input)
+        
+        top_content_id = self.extract_template_word_list(recommed_content_id_list)
+
+        recommed_content_id_list.insert(0, top_content_id)
 
         return recommed_content_id_list
