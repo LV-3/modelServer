@@ -32,11 +32,11 @@ class Sbert:
 
         query_array = np.vstack(query_list)
 
-        k = 21
+        k = 100
         D, I = self.index.search(query_array, k)
 
         index_list = I.flatten().tolist()
-        index_list = random.sample(index_list, 21)
+        index_list = random.sample(index_list, 100)
 
         recommend_content_id = [str(self.FaissIndex2Content_id.get(key)) for key in self.FaissIndex2Content_id.keys() if key in index_list]
 
