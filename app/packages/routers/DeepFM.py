@@ -2,6 +2,8 @@ import pandas as pd
 import torch
 import numpy as np
 from deepctr_torch.inputs import SparseFeat, get_feature_names
+import pickle
+from collections import Counter
 
 class DeepFM:
     def __init__(self):
@@ -16,17 +18,20 @@ class DeepFM:
                         'Romantic comedy', 'Chick Flick', 'Fantasy romance', 'Space Opera or epic sci-fi', 'Utopia', 'Dystopia', 'Contemporary Sci-Fi',
                         'Cyberpunk', 'Steampunk', 'Psychological thriller', 'Mystery', 'Film noir']
         
-        self.sparse_features = ["subsr", 'content_id', "ct_cl", "genre_of_ct_cl"] 
+        self.sparse_features = ["subsr", 'content_id', "ct_cl", "genre_of_ct_cl", "TimeGroup"] 
 
+        with open('app/resources/content_id_template.pkl', 'rb') as file:
+            self.content_id_template = pickle.load(file)
+            
     
     def load_model(self):
-        model = torch.load('app/resources/DeepFM_epoch_1206.h5')
+        model = torch.load('app/resources/DeepFM_epoch_1_1211.h5')
 
         return model
   
 
     def load_label_encoder(self):
-        label_encoders = torch.load('app/resources/label_encoders_1206.pth')
+        label_encoders = torch.load('app/resources/label_encoders_1211.pth')
 
         return label_encoders
   
@@ -80,7 +85,7 @@ class DeepFM:
         pred_ans_avg = pred_ans.sum()/len(pred_ans)
 
         threshold = pred_ans_avg
-        pred_labels = (pred_ans > threshold).astype(int)
+        pred_labels = (pred_ans >= 0).astype(int)
 
         request_data['pred_ans'] = pred_ans
         request_data['pred_labels'] = pred_labels
@@ -93,20 +98,47 @@ class DeepFM:
 
         recommend_list = [str(item['content_id']) for item in pred_dic_list_sorted if item['pred_labels'] == 1]
 
-        recommend_list = recommend_list[:21]
+        recommend_list = recommend_list[:100]
 
         return recommend_list
 
+    def extract_template_word_list(self, recommended_content_ids: list):
+        word_list = []
+        
+        for content_id in recommended_content_ids:
+            content_id = int(content_id)
+            template_words = self.content_id_template.get(content_id)
+            if not pd.isna(template_words):
+                word_list.extend(template_words.split(', '))
+            else:
+                continue
+
+        word_count = Counter(word_list)
+
+        duplicate_words = {word: count for word, count in word_count.items() if count > 1}
+
+        sorted_duplicate_words = dict(sorted(duplicate_words.items(), key=lambda item: item[1], reverse=True))
+
+        top_three_duplicates = list(sorted_duplicate_words.keys())[:3]
+        top_three_str = ', '.join(top_three_duplicates)
+        return top_three_str
+
+
 
     def get_request_data_2_Rs(self, request_data: dict) -> list:
-
-        request_request_data_personal_data_request_data = pd.DataFrame([vars(item) for item in request_data])
+        df_request_personal_data = pd.DataFrame([vars(item) for item in request_data])
         
-        prcsed_data = self.MakeModelDataSet2(request_request_data = request_request_data_personal_data_request_data)
+        df_request_personal_data['liked'] = df_request_personal_data['user_preference'].apply(lambda elm : 1 if elm >= 30 else 0)
+
+        prcsed_data = self.MakeModelDataSet2(request_request_data = df_request_personal_data)
 
         prcsed_model_input = self.prcs_Model_Input(prcsed_data = prcsed_data)
 
-        recommed_content_id_list = self.predict2rs_list(request_data = request_request_data_personal_data_request_data,
+        recommed_content_id_list = self.predict2rs_list(request_data = df_request_personal_data,
                                                         model_input_data = prcsed_model_input)
+        
+        top_content_id = self.extract_template_word_list(recommed_content_id_list)
+
+        recommed_content_id_list.insert(0, top_content_id)
 
         return recommed_content_id_list

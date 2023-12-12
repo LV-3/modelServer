@@ -25,12 +25,13 @@ class DescriptionDataItem(BaseModel):
 class PersonalDataItem(BaseModel):
     subsr: int
     content_id: int
-    liked: int
+    user_preference: int
     ct_cl: str
     genre_of_ct_cl: str
     template_A_TopGroup: Union[List[str], None]
     template_B_TopGroup: Union[List[str], None]
     template_C_TopGroup: Union[List[str], None]
+    TimeGroup: Union[str, None]
 
 
 class RequestData(BaseModel):
